@@ -4,8 +4,9 @@ const questionDisplay = document.getElementById('questionDisplay');
 const startBtn = document.getElementById('startBtn');
 const answerButtonView = document.getElementById('answerButtonView');
 
-const questionGenre = [];
+const questions = [];
 const answers = [];
+
 
 let score = 0;
 let questionCount = 0;
@@ -20,17 +21,17 @@ startBtn.addEventListener('click', () => {
     setTimeout(() => {
         createAnswerButton();
         displayView();
-    }, 2000);
+    }, 1500);
 });
 
 
-//fetchしてきた問題文を空の配列questionGenreに追加する関数
+//fetchしてきた問題文を空の配列questionsに追加する関数
 const questionDataFetch = () => {
     fetch('https://opentdb.com/api.php?amount=10')
         .then(response => response.json())
         .then(json => {
             for (i = 0; i < json.results.length; i++) {
-                questionGenre.push(json.results[i]);
+                questions.push(json.results[i]);
             }
         });
 };
@@ -45,7 +46,7 @@ onload = (() => {
 const genreCreateElement = (() => {
     title.textContent = '問題' + `${questionCount + 1}`;
     const genre = document.createElement('h3');
-    genre.textContent = '[ジャンル]' + questionGenre[questionCount].category;
+    genre.textContent = '[ジャンル]' + questions[questionCount].category;
     return genre;
 });
 
@@ -53,17 +54,15 @@ const genreCreateElement = (() => {
 //難易度を表示するエレメントの作成と問題文を更新する処理関数
 const difficultyCreateElement = (() => {
     const difficulty = document.createElement('h3');
-    difficulty.textContent = '[難易度]' + questionGenre[questionCount].difficulty;
-    questionDisplay.innerHTML = questionGenre[questionCount].question;
+    difficulty.textContent = '[難易度]' + questions[questionCount].difficulty;
+    questionDisplay.innerHTML = questions[questionCount].question;
     return difficulty;
 });
 
 
 //作成したジャンルと難易度のエレメントをappendChildで表示させる関数
 const displayView = (() => {
-    while (genreAndDifficulty.firstChild) {
-        genreAndDifficulty.removeChild(genreAndDifficulty.firstChild);
-    }
+    genreAndDifficultyReset();
     genreAndDifficulty.appendChild(genreCreateElement());
     genreAndDifficulty.appendChild(difficultyCreateElement());
 });
@@ -84,6 +83,7 @@ const resetBtn = (() => {
     });
 });
 
+
 //回答をシャッフルする為の関数
 const shuffle = (array) => {
     for (let i = array.length - 1; i >= 0; i--) {
@@ -91,49 +91,77 @@ const shuffle = (array) => {
         [array[i], array[j]] = [array[j], array[i]];
     }
     return array;
-}
+};
 
 
-const createAnswerButton = (() => {
-    answers.push(questionGenre[questionCount].correct_answer);
-    questionGenre[questionCount].incorrect_answers.forEach((test) => {
-        answers.push(test);
-    });
-
-    shuffle(answers);
-
+//回答ボタンを初期化する為の関数
+const answerButtonrReset = (() => {
     while (answerButtonView.firstChild) {
         answerButtonView.removeChild(answerButtonView.firstChild);
     }
+});
 
+
+//ジャンルと難易度を初期化する為の関数
+const genreAndDifficultyReset = (() => {
+    while (genreAndDifficulty.firstChild) {
+        genreAndDifficulty.removeChild(genreAndDifficulty.firstChild);
+    }
+});
+
+
+//正誤判定をする為の関数
+const answerCheck = ((e) => {
+    if (e.target.textContent === questions[questionCount].correct_answer) {
+        score++;
+        questionCount++
+    } else {
+        questionCount++
+    }
+});
+
+
+//現在、何問目かを監視し問題がまだあれば次のクイズを表示し
+//最後の問題を回答したらスコアが表示されるようにする関数
+const showScore = (() => {
+    if (questionCount < questions.length) {
+        displayView();
+        createAnswerButton();
+    } else if (questionCount === 10) {
+        title.textContent = `あなたの正答数は${score}です！！`;
+        questionDisplay.textContent = '再度チャレンジしたい場合は以下をクリック！！';
+        answerButtonrReset();
+        genreAndDifficultyReset();
+        resetBtn();
+    }
+});
+
+
+//回答ボタンを生成しHTMLへ表示
+const createAnswerButton = (() => {
+
+    //問題の正解を配列questionsから抽出し配列answersへ格納
+    //問題の不正解を配列questionsから抽出し配列answersへ格納
+    answers.push(questions[questionCount].correct_answer);
+    questions[questionCount].incorrect_answers.forEach((incorrect_answer) => {
+        answers.push(incorrect_answer);
+    });
+
+    shuffle(answers);
+    answerButtonrReset();
+
+    //回答ボタンを生成しHTMLに表示する。
     answers.forEach((answer) => {
         const answerBtn = document.createElement('button');
         answerBtn.classList.add('btnstyle');
         answerBtn.innerHTML = answer;
         answerButtonView.appendChild(answerBtn);
 
+        //クリックイベントで回答ボタンが押されたら正誤判定を行い
+        //最後の問題まで出題されたらスコアを表示
         answerBtn.addEventListener('click', (e) => {
-            if (e.target.textContent === questionGenre[questionCount].correct_answer) {
-                score++;
-                questionCount++
-            } else {
-                questionCount++
-            }
-
-            if (questionCount < questionGenre.length) {
-                displayView();
-                createAnswerButton();
-            } else if (questionCount === 10) {
-                title.textContent = `あなたの正答数は${score}です！！`;
-                questionDisplay.textContent = '再度チャレンジしたい場合は以下をクリック！！';
-                while (answerButtonView.firstChild) {
-                    answerButtonView.removeChild(answerButtonView.firstChild);
-                }
-                while (genreAndDifficulty.firstChild) {
-                    genreAndDifficulty.removeChild(genreAndDifficulty.firstChild);
-                }
-                resetBtn();
-            }
+            answerCheck(e);
+            showScore();
         });
     });
     answers.length = 0;
