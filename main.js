@@ -26,20 +26,13 @@ startBtn.addEventListener('click', () => {
 
 
 //fetchしてきた問題文を空の配列questionsに追加する関数
-const questionDataFetch = () => {
-    fetch('https://opentdb.com/api.php?amount=10')
-        .then(response => response.json())
-        .then(json => {
-            for (let i = 0; i < json.results.length; i++) {
-                questions.push(json.results[i]);
-            }
-        });
-};
-
-
-onload = (() => {
-    questionDataFetch();
-});
+fetch('https://opentdb.com/api.php?amount=10')
+    .then(response => response.json())
+    .then(json => {
+        for (let i = 0; i < json.results.length; i++) {
+            questions.push(json.results[i]);
+        }
+    });
 
 
 //ジャンルを表示するエレメントの作成
