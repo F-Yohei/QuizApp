@@ -1,0 +1,16 @@
+body {
+    margin: 0;
+    padding: 5px;
+}
+
+p {
+    margin: 0;
+}
+
+.btnstyle {
+    display: block;
+    padding: 6px;
+    margin: 5px 0 5px 10px;
+    width: 300px;
+    text-align: center;
+}
