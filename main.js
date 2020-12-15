@@ -30,7 +30,7 @@ const questionDataFetch = () => {
     fetch('https://opentdb.com/api.php?amount=10')
         .then(response => response.json())
         .then(json => {
-            for (i = 0; i < json.results.length; i++) {
+            for (let i = 0; i < json.results.length; i++) {
                 questions.push(json.results[i]);
             }
         });
@@ -95,7 +95,7 @@ const shuffle = (array) => {
 
 
 //回答ボタンを初期化する為の関数
-const answerButtonrReset = (() => {
+const answerButtonReset = (() => {
     while (answerButtonView.firstChild) {
         answerButtonView.removeChild(answerButtonView.firstChild);
     }
@@ -130,7 +130,7 @@ const showScore = (() => {
     } else if (questionCount === 10) {
         title.textContent = `あなたの正答数は${score}です！！`;
         questionDisplay.textContent = '再度チャレンジしたい場合は以下をクリック！！';
-        answerButtonrReset();
+        answerButtonReset();
         genreAndDifficultyReset();
         resetBtn();
     }
@@ -148,7 +148,7 @@ const createAnswerButton = (() => {
     });
 
     shuffle(answers);
-    answerButtonrReset();
+    answerButtonReset();
 
     //回答ボタンを生成しHTMLに表示する。
     answers.forEach((answer) => {
